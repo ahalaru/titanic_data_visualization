@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Titanic Data Visualization</title>
+  <meta charset="utf-8">
+  <script src="http://d3js.org/d3.v4.min.js"></script>
+  <script src="http://dimplejs.org/dist/dimple.v2.3.0.min.js"></script>
+  <script type="text/javascript">
+
+
+  function draw(data) {
+    /*
+    D3.js setup code
+    */
+    //Setting values for width and height variables
+    "use strict";
+    var margin = 75,
+    width = 1400 - margin,
+    height = 1024 - margin;
+
+    //Setting title for the vizualization with an introductory text
+    d3.select("body")
+    .append("h3")
+    .text("Survival Counts in the Titanic Disaster")
+    .append("h5")
+    .text("In this visualization I represented the counts of people survived (1) and not-survived (0) across age groups and further classified each Age group across Class and Sex. Out of the total 891 people on record, only 342 survived and rest of 549 were dead. The visualization shows distribution of these counts across different categories. ")
+    .append("h4")
+    .text("Pclass 3 had the highest count of people and their death count was very high too shown by the tall orange bars. In Pclass 2 most of the women and the children survived and the men did not survive.Pclass 1, denoted by blue, had the highest advantage and made the significant portion of the young and Adult who survived. But seniors in pclass 1 do not seem to have that advantage(which could be voluntary too)")
+    .append("h4")
+    .text("The visualization suggests that women and children in Pclass 1 and 2 had the highest odds of survival. Pclass 3 had the least likelihood across all age categories and across both Sex. These observations are limited by the completeness of the data which shows a significant number of records with unspecified Age.")
+    .append("h4")
+    .text("Please point to each section of the stacked bar chart to see the details of that data group")
+    //Setting the svg canvas dimensions which will contain our visualization
+    var svg = d3.select("body")
+    .append("svg")
+    .attr("width", width + margin)
+    .attr("height", height + margin)
+    .append('g')
+    .attr('class','chart');
+
+    /*
+    Dimple.js Chart construction code
+    */
+    //creating dimple chart variable and setting bounds for the visualization
+    var myChart = new dimple.chart(svg, data);
+    var bound_w = width /2 ;
+    var bound_h = height /2 ;
+    myChart.setBounds(60, 30, bound_w, bound_h);
+
+    //Making x a category axis , plotting first by Age_category and then by survival
+    var x=myChart.addCategoryAxis("x", ["Age_Category","Survived"]);
+    x.addOrderRule(["Child 0-12","Young 13-29","Adult 30-59","Senior 60+","Unspecified"]);
+    //Showing count on the y axis
+    var y=myChart.addMeasureAxis("y", "Count");
+    y.showGridlines=false;
+    y.title="Passenger Counts" //changing y axis default title
+    //using addSeries and addOrderRule function to show the counts grouped by Pclass and then by Sex
+    var mySeries =myChart.addSeries(["Sex","Pclass"], dimple.plot.bar);
+    mySeries.addOrderRule("Pclass");
+
+    // Using a custom tooltip to show the details for each category pointed at.
+    mySeries.getTooltipText = function (e) {
+      return [
+            "Age : "+e.xField[0],
+            "Status : "+ (e.xField[1] == 0 ? "Dead" : "Survived"),
+            "Sex : "+e.aggField[0],
+            "Passenger Class : "+e.aggField[1],
+            "Count : " + e.yValue
+        ];
+    };
+
+    //Displaying color legend for variable Pclass
+    myChart.addLegend(bound_w - 100, 125, 150, 30, "Right");
+    //Naming the legend as "Passenger Class"
+    svg.selectAll("title_text")
+    .data(["Passenger Class"])
+    .enter()
+    .append("text")
+    .attr("x", bound_w - 60)
+    .attr("y", function (d, i) { return 120 + i * 14; })
+    .style("font-family", "sans-serif")
+    .style("font-size", "10px")
+    .style("color", "Black")
+    .style("font-weight", "bold")
+    .text(function (d) { return d; });
+
+    //drawing the visualization
+    myChart.draw();
+    };
+
+</script>
+</head>
+<body>
+  <script type="text/javascript">
+  /*
+  Use D3 (not dimple.js) to load the TSV file
+  and pass the contents of it to the draw function
+  */
+  d3.tsv("titanic_data_up1.tsv", draw);
+  </script>
+</body>
+</html>

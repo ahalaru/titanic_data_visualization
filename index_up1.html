@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Titanic Data Visualization</title>
+  <meta charset="utf-8">
+  <script src="http://d3js.org/d3.v4.min.js"></script>
+  <script src="http://dimplejs.org/dist/dimple.v2.3.0.min.js"></script>
+    <script type="text/javascript">
+      function draw(data) {
+
+      /*
+        D3.js setup code
+      */
+
+          "use strict";
+          var margin = 75,
+              width = 1000 - margin,
+              height = 1200 - margin;
+
+
+              d3.select("body")
+              .append("h3")
+              .text("Survival Counts in the Titanic Disaster")
+              .append("h6")
+              .text("In these visualizations I represented the counts and Percentage of people survived (1) and not survived (0) across age groups and further classified each Age group across Class and Sex.");
+
+
+
+          var svg = d3.select("body")
+            .append("svg")
+              .attr("width", width + margin)
+              .attr("height", height + margin)
+            .append('g')
+                .attr('class','chart');
+
+      /*
+        Dimple.js Chart construction code
+      */
+
+            var myChart1 = new dimple.chart(svg, data);
+            myChart1.setBounds(60, 30, 420, 320);
+            myChart1.addCategoryAxis("x", ["Age_Category","Survived"])
+                          .addOrderRule(["Child 0-12","Young 13-29","Adult 30-59","Senior 60+","Unspecified"]);
+            var y= myChart1.addMeasureAxis("y", "Count");
+            myChart1.addSeries(["Sex","Pclass"], dimple.plot.bar).addOrderRule("Pclass");
+            myChart1.addLegend(300, 40, 325, 30, "Right");
+            myChart1.draw();
+
+
+            var myChart2 = new dimple.chart(svg, data);
+            myChart2.setBounds(60, 450, 420, 320);
+            myChart2.addCategoryAxis("x", ["Age_Category","Survived"])
+                          .addOrderRule(["Child 0-12","Young 13-29","Adult 30-59","Senior 60+","Unspecified"]);
+            myChart2.addPctAxis("y", "Count").title= "Count %";
+            myChart2.addSeries(["Sex","Pclass"], dimple.plot.bar).addOrderRule("Pclass");
+            myChart2.addLegend(300, 460, 325, 30, "Right");
+            myChart2.draw();
+
+
+      };
+
+
+      </script>
+  </head>
+<body>
+  <script type="text/javascript">
+  /*
+    Use D3 (not dimple.js) to load the TSV file
+    and pass the contents of it to the draw function
+    */
+  d3.tsv("titanic_data_up1.tsv", draw);
+  </script>
+</body>
+</html>

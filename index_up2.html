@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Titanic Data Visualization</title>
+  <meta charset="utf-8">
+  <script src="http://d3js.org/d3.v4.min.js"></script>
+  <script src="http://dimplejs.org/dist/dimple.v2.3.0.min.js"></script>
+    <script type="text/javascript">
+      function draw(data) {
+
+      /*
+        D3.js setup code
+      */
+
+          "use strict";
+          var margin = 75,
+              width = 1400 - margin,
+              height = 1024 - margin;
+
+
+              d3.select("body")
+              .append("h3")
+              .text("Survival Counts in the Titanic Disaster")
+              .append("h6")
+              .text("In this visualization I represented the counts of people survived (1) and not survived (0) across age groups and further classified each Age group across Class and Sex.");
+
+
+
+          var svg = d3.select("body")
+            .append("svg")
+              .attr("width", width + margin)
+              .attr("height", height + margin)
+            .append('g')
+                .attr('class','chart');
+
+      /*
+        Dimple.js Chart construction code
+      */
+
+            var myChart = new dimple.chart(svg, data);
+            var bound_w = width /2 ;
+            var bound_h = height /2 ;
+            myChart.setBounds(60, 30, bound_w, bound_h);
+            myChart.addCategoryAxis("x", ["Age_Category","Survived"])
+                          .addOrderRule(["Child 0-12","Young 13-29","Adult 30-59","Senior 60+","Unspecified"]);
+            myChart.addMeasureAxis("y", "Count");
+            myChart.addSeries(["Sex","Pclass"], dimple.plot.bar).addOrderRule("Pclass");
+            myChart.addLegend(bound_w - 100, 100, 150, 30, "Right");
+            myChart.draw();
+
+            //Naming the legend called  "Passenger Class"
+            svg.selectAll("title_text")
+                      .data(["Passenger Class"])
+                      .enter()
+                      .append("text")
+                        .attr("x", bound_w - 60)
+                        .attr("y", function (d, i) { return 90 + i * 14; })
+                        .style("font-family", "sans-serif")
+                        .style("font-size", "10px")
+                        .style("color", "Black")
+                        .style("font-weight", "bold")
+                        .text(function (d) { return d; });
+
+
+
+
+      };
+
+
+      </script>
+  </head>
+<body>
+  <script type="text/javascript">
+  /*
+    Use D3 (not dimple.js) to load the TSV file
+    and pass the contents of it to the draw function
+    */
+  d3.tsv("titanic_data_up1.tsv", draw);
+  </script>
+</body>
+</html>

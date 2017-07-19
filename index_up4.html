@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Titanic Data Visualization</title>
+
+  <script src="http://d3js.org/d3.v4.min.js"></script>
+  <script src="http://dimplejs.org/dist/dimple.v2.3.0.min.js"></script>
+  //Using bootstrap stylesheet for the visualization
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+  integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <script type="text/javascript">
+
+  /* The core draw function called by d3 */
+  function draw(data) {
+    /*
+    D3.js setup code
+    */
+    "use strict";
+    //Setting the svg canvas dimensions which will contain our visualization
+    var bound_w = 720 ;
+    var bound_h = 512 ;
+    var svg = dimple.newSvg("#chartContainer", bound_w, bound_h);
+
+    /*
+    Dimple.js Chart construction code
+    */
+    //creating dimple chart variable
+    var myChart = new dimple.chart(svg, data);
+    //Making x a category axis , plotting first by Age_category and then by Survived
+    var x=myChart.addCategoryAxis("x", ["Age_Category","Survived"]);
+    x.addOrderRule(["Child 0-12 ","Young 13-29","Adult 30-59","Senior 60+"]);
+    //Showing count on the y axis
+    var y=myChart.addMeasureAxis("y", "Count");
+    y.showGridlines=false;
+    y.title="Passenger Counts" //changing y axis default title
+    //using addSeries and addOrderRule function to show the counts grouped by Pclass and then by Sex
+    var mySeries =myChart.addSeries(["Sex","Pclass"], dimple.plot.bar);
+    mySeries.addOrderRule("Pclass");
+
+    /*
+    Function to place DEAD and SURVIVED Labels on the bar charts
+    */
+    mySeries.afterDraw = function (shape, data) {
+      if( (data.xField[0] === 'Senior 60+' & data.aggField[ 1 ] === '3')|
+      (data.aggField[ 1 ] === '3' & data.aggField[ 0 ] === 'female' )) {
+        // Get the shape as a d3 selection
+        var s = d3.select(shape),
+        rect = {
+          x: parseFloat(s.attr("x")),
+          y: parseFloat(s.attr("y")),
+          width: parseFloat(s.attr("width")),
+          height: parseFloat(s.attr("height"))
+        };
+        // Add a text label for the value
+        svg.append("text")
+        // Position in the centre of the shape (vertical position is
+        // manually set due to cross-browser problems with baseline)
+        .attr("x", rect.x + rect.width / 2)
+        .attr( "y", rect.y-5)
+        // Centre align
+        .style("text-anchor", "middle")
+        .style("font-size", "10px")
+        .style("font-family", "sans-serif")
+        // Make it a little transparent to tone down the black
+        .style("opacity", 0.8)
+        // Prevent text cursor on hover and allow tooltips
+        .style("pointer-events", "none")
+        // check if survived variable is 0 or 1 and add text accordingly over the bar
+        .text(data.xField[1] == 0 ? "Dead" : "Survived" );
+      }
+    }
+
+    //Displaying color legend for variable Pclass
+    myChart.addLegend(bound_w -250, 10, 200, 20, "right");
+    //Naming the legend as "Passenger Class"
+    svg.selectAll("title_text")
+    .data(["Passenger Class"])
+    .enter()
+    .append("text")
+    .attr("x", bound_w - 170)
+    .attr("y", 35)
+    .style("font-family", "sans-serif")
+    .style("font-size", "10px")
+    .style("color", "Black")
+    .style("font-weight", "bold")
+    .text(function (d) { return d; });
+
+    //drawing the visualization
+    myChart.draw();
+
+    // Using a custom tooltip to show the details for each category pointed at.
+    mySeries.getTooltipText = function (e) {
+      return [
+        "Age : "+e.xField[0],
+        "Status : "+ (e.xField[1] == 0 ? "Dead" : "Survived"),
+        "Sex : "+e.aggField[0],
+        "Passenger Class : "+e.aggField[1],
+        "Count : " + e.yValue
+      ];
+    };
+  };
+
+  </script>
+</head>
+<body>
+  <script type="text/javascript">
+  //load using d3
+  d3.tsv("titanic_data_up4.tsv", draw);
+  </script>
+  <div class="container">
+    <div class="page-header">
+      <h1>Titanic Data Visualization</h1>
+    </div>
+
+    <div class="well well-lg">
+      <h3>Survival Counts in the Titanic Disaster</h3>
+      <!-- the chart container here -->
+      <div id="chartContainer"> </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-body">
+      <p>In this visualization I represented the counts of people survived and not-survived across age groups and further classified each Age group across Class and Sex.
+          Out of the total 891 people on record, only 342 survived and rest of 549 were dead. The visualization shows distribution of these counts across different categories.
+        </p>
+        <ul>
+          <li>Pclass 3 had the highest count of people and their death count was very high too shown by the tall orange bars.</li>
+          <li>In Pclass 2 most of the women and the children survived and the men did not survive.</li>
+          <li>Pclass 1, denoted by blue, had the highest advantage and made the significant portion of the young and Adult who survived </li>
+          <li>Seniors in pclass 1 do not seem to have the survival advantage, which could also be voluntary</li>
+          <li>The visualization suggests that women and children in Pclass 1 and 2 had the highest odds of survival. </li>
+          <li>Pclass 3 had the least likelihood across all age categories and across both Sex  </li>
+        </ul>
+
+        <p>Please point to each section of the stacked bar chart to see the details of that data group</p>
+      </div>
+
+    </div>
+  </div> <!-- /container -->
+
+</body>
+</html>
